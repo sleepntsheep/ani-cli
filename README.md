@@ -1,4 +1,4 @@
-browse and watch anime ig (wip)
+browse and watch anime (scrape from gogoanime) (wip)
 
 #### demo
 ![demo](demo.gif)
