@@ -1,14 +1,14 @@
 browse and watch anime ig (wip)
 
-demo
+#### demo
 ![demo](demo.gif)
 
-dependencies
+#### dependencies
 ```
 mpv
 ```
 
-installation
+#### installation
 
 - from pypi
 ```bash
@@ -20,7 +20,7 @@ pip install ani-cli
 pip install git+https://github.com/sleepntsheep/ani-cli
 ```
 
-- usages
+#### usages
 ```bash
 ani
 ```
@@ -29,6 +29,6 @@ or
 ani some anime name
 ```
 
-- notes
+#### otes
 
 it take quite long to open mpv, i don't know why too :skull:
