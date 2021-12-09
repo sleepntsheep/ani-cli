@@ -22,7 +22,7 @@ def search(name: str) -> list:
         d[match[1]] = match[0]
     return d
 
-def search_episode(anime_id: str) -> int:
+def get_episode_count(anime_id: str) -> int:
     r: requests.Response = requests.get(f'{base_url}//category/{anime_id}', headers=header)
     pattern = r'''ep_start\s?=\s?['"]([0-9]+)['"]\sep_end\s?=\s?['"]([0-9]+)['"]>'''
     episodes = re.search(pattern, r.text)
@@ -46,10 +46,21 @@ def get_link(embedded_link: str) -> str:
     link = re.search(r"https:.*(m3u8)|(mp4)", link).group()
     return link
 
-def main():
-    if len(sys.argv) > 1:
-        name: str = ' '.join(sys.argv[1:])
-    else:
+def play_episode(anime_id: str, episode: int):
+   
+    
+    embed_link: str = get_embed_link(anime_id, episode)
+    if embed_link == None:
+        return(print('Error: embed link not found'))
+
+    link: str = get_link(embed_link)
+
+    print(f'Playing {anime_id}, episode {episode}')
+
+    os.system(f'mpv --http-header-fields="Referer: {embed_link}" {link}')
+
+def search_cli(name=None):
+    if name == None:
         name: str  = inquirer.text(message='Input anime title:').execute()
 
     search_result: list = search(name)
@@ -63,20 +74,56 @@ def main():
         choices=search_result
     ).execute()
 
-    ep_start, ep_end = search_episode(search_result[anime_title])
+    anime_id = search_result[anime_title]
 
+    return anime_id
+
+def get_episode(ep_end):
     episode: int = int(inquirer.text(message=F'Select episode to watch [1, {ep_end}]').execute())
-    
-    while not (episode >= ep_start and episode <= ep_end):
+    while not (episode >= 1 and episode <= ep_end):
         episode: int = int(inquirer.text(message=F'Invalid episode, try again').execute())
-    
-    embed_link: str = get_embed_link(search_result[anime_title], episode)
-    if embed_link == None:
-        return(print('Error: embed link not found'))
 
-    link: str = get_link(embed_link)
-    print(link)
-    os.system(f'mpv --http-header-fields="Referer: {embed_link}" {link}')
+
+def main(name=None):
+
+    if len(sys.argv) > 1:
+        anime_id = search_cli(' '.join(sys.argv[1:]))
+    else:
+        anime_id = search_cli()
+
+    ep_start, ep_end = get_episode_count(anime_id)
+
+    episode = get_episode(ep_end)
+
+    play_episode(anime_id, episode)
+    
+    action = ''
+    while action != 'Quit':
+        action: str = inquirer.select(
+            message='Select anime to watch',
+            choices= [
+                'Replay the episode again',
+                'Select episode',
+                'Play next episode',
+                'Search other anime',
+                'Quit'
+            ]
+        ).execute()
+
+        if action == 'Replay the episode again':
+            play_episode(episode)
+        elif action == 'Play next episode':
+            if episode+1 <= ep_end:
+                episode += 1
+                play_episode(episode)
+            else:
+                print('No more episode to watch')
+        elif action == 'Search other anime':
+            anime_id = search_cli()
+            ep_end = get_episode_count(anime_id)
+            play_episode(anime_id, get_episode(ep_end))
+        elif action == 'Quit':
+            exit()
 
 if __name__ == '__main__': 
-    exit(main())
+    main()
