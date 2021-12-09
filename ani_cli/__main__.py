@@ -108,11 +108,11 @@ def main(name=None):
         ).execute()
 
         if action == 'Replay the episode again':
-            play_episode(episode)
+            play_episode(anime_id, episode)
         elif action == 'Play next episode':
             if episode+1 <= ep_end:
                 episode += 1
-                play_episode(episode)
+                play_episode(anime_id, episode)
             else:
                 print('No more episode to watch')
         elif action == 'Search other anime':
