@@ -1,5 +1,4 @@
 browse and watch anime ig (wip)
-like ![ani-cli](https://github.com/pystardust/ani-cli) but in python
 
 demo
 ![demo](demo.gif)
@@ -21,6 +20,15 @@ pip install ani-cli
 pip install git+https://github.com/sleepntsheep/ani-cli
 ```
 
-notes:
+- usages
+```bash
+ani
+```
+or
+```bash
+ani some anime name
+```
+
+- notes
 
 it take quite long to open mpv, i don't know why too :skull:
