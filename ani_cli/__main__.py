@@ -1,7 +1,7 @@
 import re
 import requests
 import sys
-from InquirerPy import inquirer
+from InquirerPy import inquirer, utils
 import os
 import subprocess
 
@@ -53,8 +53,6 @@ def play_episode(anime_id: str, episode: int):
 
     link: str = get_link(embed_link)
 
-    print(f'Playing {anime_id}, episode {episode}')
-    print(f'{embed_link} {link}')
     mpv = subprocess.Popen(f'mpv --http-header-fields="Referer: {embed_link}" {link}', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
     return mpv
@@ -99,7 +97,7 @@ def main(name=None):
     action = ''
     while action != 'Quit':
         action: str = inquirer.select(
-            message='Select action',
+            message=f'Playing {anime_id}, episode {episode}',
             choices= [
                 'Replay the episode again',
                 'Select episode',

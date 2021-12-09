@@ -1,0 +1,24 @@
+
+[tool.poetry]
+name = "ani-cli"
+version = "0.1.4"
+description = ""
+authors = ["sleepntsheep <sheep@papangkorn.com>"]
+packages = [
+    { include = "ani_cli" },
+    { include = "ani_cli/**/*.py" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+InquirerPy = "^0.3.0"
+requests = "^2.26.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+ani = 'ani_cli.__main__:main'
