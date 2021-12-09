@@ -29,6 +29,6 @@ or
 ani some anime name
 ```
 
-#### otes
+#### notes
 
 it take quite long to open mpv, i don't know why too :skull:
