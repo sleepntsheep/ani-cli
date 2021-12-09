@@ -1,5 +1,26 @@
-browse and watch anime in cli
+browse and watch anime ig (wip)
+like ![ani-cli](https://github.com/pystardust/ani-cli) but in python
 
-### WIP
+demo
+![demo](demo.gif)
 
-trying to figure out how to not get captchaed
+dependencies
+```
+mpv
+```
+
+installation
+
+- from pypi
+```bash
+pip install ani-cli
+```
+
+- from git
+```bash
+pip install git+https://github.com/sleepntsheep/ani-cli
+```
+
+notes:
+
+it take quite long to open mpv, i don't know why too :skull:
