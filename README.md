@@ -1,6 +1,6 @@
 browse and watch anime (scrape from gogoanime) (wip)
 
-basically ![ani-cli](https://github.com/pystardust/ani-cli) but in python cuz python good
+basically [ani-cli](https://github.com/pystardust/ani-cli) but in python cuz python good
 
 #### demo
 ![demo](demo.gif)
