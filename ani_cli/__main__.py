@@ -1,6 +1,9 @@
+'''
+Simple script that '''
 import re
 import shlex
 import sys
+# import traceback
 import subprocess
 import requests
 from InquirerPy import inquirer
@@ -143,47 +146,52 @@ def main():
     '''
     Main
     '''
-    if len(sys.argv) > 1:
-        anime_title, anime_id = get_anime(' '.join(sys.argv[1:]))
-    else:
-        anime_title, anime_id = get_anime()
-
-    while anime_title is None:
-        anime_title, anime_id = get_anime()
-
-    episode_count = get_episode_count(anime_id)
-
-    episode = get_episode(episode_count)
-
-    play_episode(anime_id, episode)
-
-    action = ''
-    while action != 'Quit':
-        action: str = inquirer.select(
-            message=f'Playing {anime_title}, episode {episode}',
-            choices= [
-                'Replay the episode again',
-                'Select episode',
-                'Play next episode',
-                'Search other anime',
-                'Quit'
-            ]
-        ).execute()
-
-        if action == 'Replay the episode again':
-            play_episode(anime_id, episode)
-        elif action == 'Play next episode':
-            if episode+1 <= episode_count:
-                episode += 1
-                play_episode(anime_id, episode)
-            else:
-                print('No more episode to watch')
-        elif action == 'Search other anime':
+    try:
+        if len(sys.argv) > 1:
+            anime_title, anime_id = get_anime(' '.join(sys.argv[1:]))
+        else:
             anime_title, anime_id = get_anime()
-            episode_count = get_episode_count(anime_id)
-            play_episode(anime_id, get_episode(episode_count))
-        elif action == 'Quit':
-            sys.exit()
+
+        while anime_title is None:
+            anime_title, anime_id = get_anime()
+
+        episode_count = get_episode_count(anime_id)
+
+        episode = get_episode(episode_count)
+
+        play_episode(anime_id, episode)
+
+        action = ''
+        while action != 'Quit':
+            action: str = inquirer.select(
+                message=f'Playing {anime_title}, episode {episode}',
+                choices= [
+                    'Replay the episode again',
+                    'Select episode',
+                    'Play next episode',
+                    'Search other anime',
+                    'Quit'
+                ]
+            ).execute()
+
+            if action == 'Replay the episode again':
+                play_episode(anime_id, episode)
+            elif action == 'Play next episode':
+                if episode+1 <= episode_count:
+                    episode += 1
+                    play_episode(anime_id, episode)
+                else:
+                    print('No more episode to watch')
+            elif action == 'Search other anime':
+                anime_title, anime_id = get_anime()
+                episode_count = get_episode_count(anime_id)
+                play_episode(anime_id, get_episode(episode_count))
+            elif action == 'Quit':
+                sys.exit()
+    except KeyboardInterrupt:
+        print('Exiting...')
+        sys.exit()
+    # except Exception:
 
 if __name__ == '__main__':
     main()
