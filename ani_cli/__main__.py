@@ -97,12 +97,12 @@ def play_episode(anime_id: str, episode: int):
         return print('Error: embed link not found')
 
     link: str = get_link(embed_link)
-    with subprocess.Popen(
+    process = subprocess.Popen(
         shlex.split(f'mpv --http-header-fields="Referer: {embed_link}" {link}'),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.STDOUT
-    ) as process:
-        return process
+    )
+    return process
 
 def get_anime(name=None) -> str:
     '''
