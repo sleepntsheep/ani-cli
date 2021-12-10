@@ -160,7 +160,7 @@ def main():
     action = ''
     while action != 'Quit':
         action: str = inquirer.select(
-            message=f'Playing {anime_title}, episode {episode}',
+            message=f'Played {anime_title}, episode {episode}',
             choices= [
                 'Replay the episode again',
                 'Select episode',
