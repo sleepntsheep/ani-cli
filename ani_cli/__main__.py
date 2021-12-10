@@ -1,4 +1,5 @@
 import re
+import shlex
 import sys
 import subprocess
 import requests
@@ -7,11 +8,11 @@ from InquirerPy import inquirer#, utils
 base_url: str = 'https://www1.gogoanime.cm'
 program: str = 'mpv'
 
-header = {
+header: dict = {
     'user-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
 }
 
-session = requests.session()
+session: requests.Session = requests.session()
 
 def search(name: str) -> list:
     '''
@@ -53,7 +54,7 @@ def get_embed_link(anime_id: str, episode: int) -> str:
     return:
         embed_link (str): embed link of that episode
     '''
-    response: requests.Response = requests.get(f'{base_url}/{anime_id}-episode-{episode}', headers=header)
+    response: requests.Response = session.get(f'{base_url}/{anime_id}-episode-{episode}', headers=header)
     pattern: str = r'''data-video="(.*?embedplus\?.*?)"\s?>'''
     match = re.search(pattern, response.text)
     if match is None:
@@ -89,13 +90,12 @@ def play_episode(anime_id: str, episode: int):
         return print('Error: embed link not found')
 
     link: str = get_link(embed_link)
-    process = subprocess.Popen(
-        f'mpv --http-header-fields="Referer: {embed_link}" {link}',
-        shell=True,
+    with subprocess.Popen(
+        shlex.split(f'mpv --http-header-fields="Referer: {embed_link}" {link}'),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.STDOUT
-    )
-    return process
+    ) as process:
+        return process
 
 def get_anime(name=None) -> str:
     '''
