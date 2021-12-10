@@ -1,4 +1,6 @@
-browse and watch anime ig (wip)
+browse and watch anime (scrape from gogoanime) (wip)
+
+basically [ani-cli](https://github.com/pystardust/ani-cli) but in python cuz python good
 
 #### demo
 ![demo](demo.gif)
@@ -29,6 +31,6 @@ or
 ani some anime name
 ```
 
-#### otes
+#### notes
 
 it take quite long to open mpv, i don't know why too :skull:
