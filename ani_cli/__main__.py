@@ -114,7 +114,8 @@ def get_anime(name=None) -> str:
     search_result: list = search(name)
 
     if not search_result:
-        return print('No result found')
+        print('No result found')
+        return None, None
 
     anime_title: str = inquirer.select(
         message='Select anime to watch',
@@ -145,6 +146,9 @@ def main():
     if len(sys.argv) > 1:
         anime_title, anime_id = get_anime(' '.join(sys.argv[1:]))
     else:
+        anime_title, anime_id = get_anime()
+
+    while anime_title is None:
         anime_title, anime_id = get_anime()
 
     episode_count = get_episode_count(anime_id)
