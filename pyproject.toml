@@ -1,7 +1,7 @@
 
 [tool.poetry]
 name = "ani-cli"
-version = "0.1.7"
+version = "0.2.0"
 description = ""
 authors = ["sleepntsheep <sheep@papangkorn.com>"]
 packages = [

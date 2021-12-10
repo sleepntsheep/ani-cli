@@ -3,13 +3,13 @@ import shlex
 import sys
 import subprocess
 import requests
-from InquirerPy import inquirer#, utils
+from InquirerPy import inquirer
 
 base_url: str = 'https://www1.gogoanime.cm'
 program: str = 'mpv'
 
 header: dict = {
-    'user-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
+    'user-agent': 'Mozilla/5.0'
 }
 
 session: requests.Session = requests.session()
@@ -19,9 +19,13 @@ def search(name: str) -> list:
     Scrape anime from gogoanime search page
     params:
         name (str): anime name
-    return: 
+    return:
         d (dict): {anime_title: anime_id}'''
-    response: requests.Response = session.get(f'{base_url}//search.html', params = {'keyword': name}, headers=header)
+    response: requests.Response = session.get(
+        f'{base_url}//search.html',
+        params = {'keyword': name},
+        headers=header
+    )
     pattern: str = r'<div class="img">\s*<a href="/category/(.+)" title="(.+)">'
     matches: list = re.findall(pattern, response.text)
     d = {}
@@ -54,7 +58,10 @@ def get_embed_link(anime_id: str, episode: int) -> str:
     return:
         embed_link (str): embed link of that episode
     '''
-    response: requests.Response = session.get(f'{base_url}/{anime_id}-episode-{episode}', headers=header)
+    response: requests.Response = session.get(
+        f'{base_url}/{anime_id}-episode-{episode}',
+        headers=header
+    )
     pattern: str = r'''data-video="(.*?embedplus\?.*?)"\s?>'''
     match = re.search(pattern, response.text)
     if match is None:
@@ -107,7 +114,7 @@ def get_anime(name=None) -> str:
     search_result: list = search(name)
 
     if not search_result:
-        return print('No result found') 
+        return print('No result found')
 
     anime_title: str = inquirer.select(
         message='Select anime to watch',
@@ -132,6 +139,9 @@ def get_episode(ep_end: int) -> int:
     return episode
 
 def main():
+    '''
+    Main
+    '''
     if len(sys.argv) > 1:
         anime_title, anime_id = get_anime(' '.join(sys.argv[1:]))
     else:
