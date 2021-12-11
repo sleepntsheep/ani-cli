@@ -1,12 +1,10 @@
-'''
-Simple script that '''
 import re
 import shlex
 import sys
-# import traceback
 import subprocess
 import requests
 from InquirerPy import inquirer
+from typing import Union, Tuple
 
 base_url: str = 'https://www1.gogoanime.cm'
 program: str = 'mpv'
@@ -17,7 +15,7 @@ header: dict = {
 
 session: requests.Session = requests.session()
 
-def search(name: str) -> list:
+def search(name: str) -> dict:
     '''
     Scrape anime from gogoanime search page
     params:
@@ -36,7 +34,7 @@ def search(name: str) -> list:
         d[match[1]] = match[0]
     return d
 
-def get_episode_count(anime_id: str) -> int:
+def get_episode_count(anime_id: str) -> Union[int, None]:
     '''
     Scrape episode avaliable count
     params:
@@ -48,11 +46,11 @@ def get_episode_count(anime_id: str) -> int:
     pattern: str = r'''ep_start\s?=\s?['"]([0-9]+)['"]\sep_end\s?=\s?['"]([0-9]+)['"]>'''
     episodes: list = re.findall(pattern, response.text)
     if episodes == []:
-        return 'Not found'
-    episode_count = int(episodes[-1][1])
+        return None
+    episode_count: int = int(episodes[-1][1])
     return episode_count
 
-def get_embed_link(anime_id: str, episode: int) -> str:
+def get_embed_link(anime_id: str, episode: int) -> Union[str, None]:
     '''
     Scrape embed link from gogoanime
     params:
@@ -95,7 +93,7 @@ def play_episode(anime_id: str, episode: int):
     return:
         subprocess.popen process
     '''
-    embed_link: str = get_embed_link(anime_id, episode)
+    embed_link = get_embed_link(anime_id, episode)
     if embed_link is None:
         return print('Error: embed link not found')
 
@@ -107,14 +105,14 @@ def play_episode(anime_id: str, episode: int):
     )
     return process
 
-def get_anime(name=None) -> str:
+def get_anime(name=None) -> Union[Tuple[str, str], Tuple[None, None]]:
     '''
     Get anime title from user
     '''
     if name is None:
-        name: str  = inquirer.text(message='Input anime title:').execute()
+        name = inquirer.text(message='Input anime title:').execute()
 
-    search_result: list = search(name)
+    search_result: dict = search(name)
 
     if not search_result:
         print('No result found')
@@ -122,7 +120,7 @@ def get_anime(name=None) -> str:
 
     anime_title: str = inquirer.select(
         message='Select anime to watch',
-        choices=search_result
+        choices=list(search_result.keys())
     ).execute()
 
     anime_id = search_result[anime_title]
@@ -152,10 +150,14 @@ def main():
         else:
             anime_title, anime_id = get_anime()
 
-        while anime_title is None:
+        while anime_title is None or anime_id is None:
             anime_title, anime_id = get_anime()
 
         episode_count = get_episode_count(anime_id)
+
+        if episode_count is None:
+            print('Error getting episode count')
+            sys.exit()
 
         episode = get_episode(episode_count)
 
@@ -191,7 +193,6 @@ def main():
     except KeyboardInterrupt:
         print('Exiting...')
         sys.exit()
-    # except Exception:
 
 if __name__ == '__main__':
     main()
