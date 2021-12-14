@@ -84,6 +84,23 @@ def get_link(embedded_link: str) -> str:
     link: str = re.search(r"https:.*(m3u8)|(mp4)", link).group()
     return link
 
+def get_quality(embed_link: str, link: str) -> str:
+    '''
+    Asks user to select quality to watch
+    params:
+        embed_link (str): gogoanime embedded link
+        link (str): m3u8 link
+    return:
+        quality (str): quality to watch
+    '''
+
+    video_file: requests.Response = session.get(link, headers=dict(header, **{'referer': embed_link}))
+    qualitys: list = re.findall(r'([0-9])+\.m3u8', video_file.text)
+    for quality in qualitys:
+        print(quality[0])
+
+    return ''
+
 def play_episode(anime_id: str, episode: int):
     '''
     Play episode
@@ -95,9 +112,11 @@ def play_episode(anime_id: str, episode: int):
     '''
     embed_link = get_embed_link(anime_id, episode)
     if embed_link is None:
-        return print('Error: embed link not found')
+        print('Error: embed link not found')
+        return None
 
     link: str = get_link(embed_link)
+    get_quality(embed_link, link)
     process = subprocess.Popen(
         shlex.split(f'mpv --http-header-fields="Referer: {embed_link}" {link}'),
         stdout=subprocess.DEVNULL,
