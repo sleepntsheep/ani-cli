@@ -24,13 +24,16 @@ pip install git+https://github.com/sleepntsheep/ani-cli
 
 #### usages
 ```bash
-ani
+ani 
 ```
 or
 ```bash
 ani some anime name
 ```
 
-#### notes
+selecting quality:
+```bash
+ani -q <best/worst/1080/720/360> some anime name
+ani --quality <best/worst/1080/720/360> some anime name
+```
 
-it take quite long to open mpv, i don't know why too :skull:

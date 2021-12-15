@@ -122,6 +122,9 @@ def play_episode(anime_id: str, episode: int, quality: str):
         link = link.replace('.m3u8', f'.{qualitys[-1]}.m3u8')
     elif quality == 'worst':
         link = link.replace('.m3u8', f'.{qualitys[0]}.m3u8')
+    else:
+        print('Specified quality not available, defaulting to best')
+        link = link.replace('.m3u8', f'.{qualitys[-1]}.m3u8')
     process = subprocess.Popen(
         shlex.split(f'mpv --http-header-fields="Referer: {embed_link}" {link}'),
         stdout=subprocess.DEVNULL,
