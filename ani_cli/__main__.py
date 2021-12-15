@@ -3,6 +3,7 @@ import shlex
 import sys
 import subprocess
 import requests
+import argparse
 from InquirerPy import inquirer
 from typing import Union, Tuple
 
@@ -84,7 +85,7 @@ def get_link(embedded_link: str) -> str:
     link: str = re.search(r"https:.*(m3u8)|(mp4)", link).group()
     return link
 
-def get_quality(embed_link: str, link: str) -> str:
+def get_quality(embed_link: str, link: str) -> list:
     '''
     Asks user to select quality to watch
     params:
@@ -95,13 +96,13 @@ def get_quality(embed_link: str, link: str) -> str:
     '''
 
     video_file: requests.Response = session.get(link, headers=dict(header, **{'referer': embed_link}))
-    qualitys: list = re.findall(r'([0-9])+\.m3u8', video_file.text)
+    qualitys: list = re.findall(r'([0-9]+)\.m3u8', video_file.text)
     for quality in qualitys:
-        print(quality[0])
+        print(quality)
 
-    return ''
+    return qualitys
 
-def play_episode(anime_id: str, episode: int):
+def play_episode(anime_id: str, episode: int, quality: str):
     '''
     Play episode
     params:
@@ -116,7 +117,9 @@ def play_episode(anime_id: str, episode: int):
         return None
 
     link: str = get_link(embed_link)
-    get_quality(embed_link, link)
+    qualitys = get_quality(embed_link, link)
+    if quality in qualitys:
+        link = link.replace('.m3u8', f'.{quality}.m3u8')
     process = subprocess.Popen(
         shlex.split(f'mpv --http-header-fields="Referer: {embed_link}" {link}'),
         stdout=subprocess.DEVNULL,
@@ -163,11 +166,20 @@ def main():
     '''
     Main
     '''
+    
     try:
-        if len(sys.argv) > 1:
-            anime_title, anime_id = get_anime(' '.join(sys.argv[1:]))
-        else:
-            anime_title, anime_id = get_anime()
+        parser = argparse.ArgumentParser(description='argparse')
+        parser.add_argument('-q', '--quality', help='Quality to watch', default='best')
+
+        args = parser.parse_args()
+
+        print(args.quality)
+        #if len(sys.argv) > 1:
+        #    anime_title, anime_id = get_anime(' '.join(sys.argv[1:]))
+        #else:
+        #    anime_title, anime_id = get_anime()
+        anime_title, anime_id = get_anime()
+        
 
         while anime_title is None or anime_id is None:
             anime_title, anime_id = get_anime()
@@ -180,7 +192,7 @@ def main():
 
         episode = get_episode(episode_count)
 
-        play_episode(anime_id, episode)
+        play_episode(anime_id, episode, args.quality)
 
         action = ''
         while action != 'Quit':
