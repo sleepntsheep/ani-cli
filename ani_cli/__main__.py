@@ -87,18 +87,16 @@ def get_link(embedded_link: str) -> str:
 
 def get_quality(embed_link: str, link: str) -> list:
     '''
-    Asks user to select quality to watch
+    Get available quality
     params:
         embed_link (str): gogoanime embedded link
         link (str): m3u8 link
     return:
-        quality (str): quality to watch
+        qualitys (list): list of quality avaliable
     '''
 
     video_file: requests.Response = session.get(link, headers=dict(header, **{'referer': embed_link}))
     qualitys: list = re.findall(r'([0-9]+)\.m3u8', video_file.text)
-    for quality in qualitys:
-        print(quality)
 
     return qualitys
 
@@ -120,6 +118,10 @@ def play_episode(anime_id: str, episode: int, quality: str):
     qualitys = get_quality(embed_link, link)
     if quality in qualitys:
         link = link.replace('.m3u8', f'.{quality}.m3u8')
+    elif quality == 'best':
+        link = link.replace('.m3u8', f'.{qualitys[-1]}.m3u8')
+    elif quality == 'worst':
+        link = link.replace('.m3u8', f'.{qualitys[0]}.m3u8')
     process = subprocess.Popen(
         shlex.split(f'mpv --http-header-fields="Referer: {embed_link}" {link}'),
         stdout=subprocess.DEVNULL,
@@ -170,17 +172,16 @@ def main():
     try:
         parser = argparse.ArgumentParser(description='argparse')
         parser.add_argument('-q', '--quality', help='Quality to watch', default='best')
+        parser.add_argument('rest', nargs=argparse.REMAINDER)
 
         args = parser.parse_args()
 
-        print(args.quality)
-        #if len(sys.argv) > 1:
-        #    anime_title, anime_id = get_anime(' '.join(sys.argv[1:]))
-        #else:
-        #    anime_title, anime_id = get_anime()
-        anime_title, anime_id = get_anime()
+        if args.rest != []:
+            anime_title, anime_id = get_anime(' '.join(args.rest))
+        else:
+            anime_title, anime_id = get_anime()
+        #anime_title, anime_id = get_anime()
         
-
         while anime_title is None or anime_id is None:
             anime_title, anime_id = get_anime()
 
