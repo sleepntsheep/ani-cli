@@ -124,7 +124,7 @@ def play_episode(anime_id: str, episode: int, select_quality: bool):
         ).execute()
         link = link.replace('.m3u8', f'.{quality}.m3u8')
     else:
-        link = link.replace('m3u8', qualitys[-1] + '.m3u8')
+        link = link.replace('m3u8', qualitys[0] + '.m3u8')
 
     process = subprocess.Popen(
         shlex.split(f'mpv --http-header-fields="Referer: {embed_link}" {link}'),
