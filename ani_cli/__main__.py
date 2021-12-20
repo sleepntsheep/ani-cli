@@ -143,7 +143,8 @@ def get_anime(name=None) -> Union[Tuple[str, str], Tuple[None, None]]:
 
     if not search_result:
         print('No result found')
-        return None, None
+        return '', ''
+
 
     anime_title: str = inquirer.select(
         message='Select anime to watch',
