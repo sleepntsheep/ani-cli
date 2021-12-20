@@ -100,7 +100,7 @@ def get_quality(embed_link: str, link: str) -> list:
 
     return qualitys
 
-def play_episode(anime_id: str, episode: int, quality: str):
+def play_episode(anime_id: str, episode: int, select_quality: bool):
     '''
     Play episode
     params:
@@ -115,16 +115,17 @@ def play_episode(anime_id: str, episode: int, quality: str):
         return None
 
     link: str = get_link(embed_link)
-    qualitys = get_quality(embed_link, link)
-    if quality in qualitys:
+    qualitys = get_quality(embed_link, link)[::-1]
+
+    if select_quality:
+        quality: str = inquirer.select(
+            message='Select quality',
+            choices=qualitys
+        ).execute()
         link = link.replace('.m3u8', f'.{quality}.m3u8')
-    elif quality == 'best':
-        link = link.replace('.m3u8', f'.{qualitys[-1]}.m3u8')
-    elif quality == 'worst':
-        link = link.replace('.m3u8', f'.{qualitys[0]}.m3u8')
     else:
-        print('Specified quality not available, defaulting to best')
-        link = link.replace('.m3u8', f'.{qualitys[-1]}.m3u8')
+        link = link.replace('m3u8', qualitys[-1] + '.m3u8')
+
     process = subprocess.Popen(
         shlex.split(f'mpv --http-header-fields="Referer: {embed_link}" {link}'),
         stdout=subprocess.DEVNULL,
@@ -143,8 +144,7 @@ def get_anime(name=None) -> Union[Tuple[str, str], Tuple[None, None]]:
 
     if not search_result:
         print('No result found')
-        return '', ''
-
+        return None, None
 
     anime_title: str = inquirer.select(
         message='Select anime to watch',
@@ -175,7 +175,7 @@ def main():
     
     try:
         parser = argparse.ArgumentParser(description='argparse')
-        parser.add_argument('-q', '--quality', help='Quality to watch', default='best')
+        parser.add_argument('-q', '--quality', action='store_true', help='specify this if you want to select quality')
         parser.add_argument('rest', nargs=argparse.REMAINDER)
 
         args = parser.parse_args()
@@ -184,7 +184,6 @@ def main():
             anime_title, anime_id = get_anime(' '.join(args.rest))
         else:
             anime_title, anime_id = get_anime()
-        #anime_title, anime_id = get_anime()
         
         while anime_title is None or anime_id is None:
             anime_title, anime_id = get_anime()

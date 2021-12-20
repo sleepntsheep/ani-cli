@@ -23,17 +23,15 @@ pip install git+https://github.com/sleepntsheep/ani-cli
 ```
 
 #### usages
+
 ```bash
 ani 
-```
-or
-```bash
 ani some anime name
 ```
 
-selecting quality:
-```bash
-ani -q <best/worst/1080/720/360> some anime name
-ani --quality <best/worst/1080/720/360> some anime name
-```
+if you want to select quality
 
+```bash
+ani -q
+ani -q some anime name 
+```
