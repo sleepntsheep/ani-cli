@@ -2,10 +2,10 @@ import re
 import shlex
 import sys
 import subprocess
-import requests
 import argparse
-from InquirerPy import inquirer
 from typing import Union, Tuple
+import requests
+from InquirerPy import inquirer
 
 base_url: str = 'https://www1.gogoanime.cm'
 program: str = 'mpv'
@@ -31,7 +31,7 @@ def search(name: str) -> dict:
     )
     pattern: str = r'<div class="img">\s*<a href="/category/(.+)" title="(.+)">'
     matches: list = re.findall(pattern, response.text)
-    d = {}
+    d: dict = {}
     for match in matches:
         d[match[1]] = match[0]
     return d
@@ -66,11 +66,10 @@ def get_embed_link(anime_id: str, episode: int) -> Union[str, None]:
         headers=header
     )
     pattern: str = r'''data-video="(.*?embedplus\?.*?)"\s?>'''
-    match = re.search(pattern, response.text)
+    match: re.Match = re.search(pattern, response.text)
     if match is None:
         return None
-    embed_link = f'https:{match.group(1)}'
-    return embed_link
+    return f'https:{match.group(1)}'
 
 def get_link(episode_id: str) -> list:
     '''
@@ -82,7 +81,7 @@ def get_link(episode_id: str) -> list:
     '''
     response: requests.Response = session.get(f'https://gogoplay1.com/download?{episode_id}', headers=header)
 
-    links: list = re.findall(r'href="(https?:\/\/vidstreamingcdn\.com\/.+expiry=[0-9]+)"', response.text)
+    links: list = re.findall(r'href="(https?:\/\/.+?\.com\/.+?expiry=[0-9]+)"', response.text)
 
     return links
 
@@ -101,32 +100,33 @@ def play_episode(anime_id: str, episode: int, select_quality: bool):
         print('Error: embed link not found')
         return None
 
-
     episode_id: re.Match = re.search(r'id=(.+?&)', embed_link)
+
     if episode_id is None:
         return None
 
     episode_id: str = episode_id.group(0)
 
     links: list = get_link(episode_id)
+    if links == []:
+        print('Cannot find video links')
+        return None
 
     qualitys: dict = {}
     for link in links:
-        qualitys[re.search(r'([0-9]+)p\.(?:mp4|m3u8)', link).group(1)] = link 
+        qualitys[re.search(r'([0-9]+)p\.(?:mp4|m3u8)', link).group(1)] = link
 
     if select_quality:
         quality: str = inquirer.select(
             message='Select quality',
             choices=list(qualitys.keys())[::-1]
         ).execute()
-        link = qualitys[quality]
+        link: str = qualitys[quality]
     else:
-        link = qualitys[list(qualitys.keys())[-1]]
-
-    link = link.replace('amp;', '')
+        link: str = qualitys[list(qualitys.keys())[-1]]
 
     process = subprocess.Popen(
-        shlex.split(f'mpv --http-header-fields="Referer: https://gogoplay1.com/download?{episode_id}" {link}'),
+        shlex.split(f'mpv --http-header-fields="Referer: https://gogoplay1.com/download?{episode_id}" {link.replace("amp;", "")}'),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.STDOUT
     )
@@ -165,7 +165,7 @@ def get_episode(ep_end: int) -> int:
     while True:
         try:
             episode = int(inquirer.text(message=F'Select episode to watch [1 - {ep_end}]').execute())
-        except:
+        except ValueError:
             continue
         while not (episode >= 1 and episode <= ep_end):
             episode: int = int(inquirer.text(message='Invalid episode, try again').execute())
@@ -176,7 +176,7 @@ def main():
     '''
     Main
     '''
-    
+
     try:
         parser = argparse.ArgumentParser(description='argparse')
         parser.add_argument('-q', '--quality', action='store_true', help='specify this if you want to select quality')
@@ -188,7 +188,7 @@ def main():
             anime_title, anime_id = get_anime(' '.join(args.rest))
         else:
             anime_title, anime_id = get_anime()
-        
+
         while anime_title is None or anime_id is None:
             anime_title, anime_id = get_anime()
 
