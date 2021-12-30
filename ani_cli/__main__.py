@@ -11,7 +11,8 @@ base_url: str = 'https://www1.gogoanime.cm'
 program: str = 'mpv'
 
 header: dict = {
-    'user-agent': 'Mozilla/5.0'
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+    'referer':'https://www.google.com/'
 }
 
 session: requests.Session = requests.session()
@@ -71,34 +72,19 @@ def get_embed_link(anime_id: str, episode: int) -> Union[str, None]:
     embed_link = f'https:{match.group(1)}'
     return embed_link
 
-def get_link(embedded_link: str) -> str:
+def get_link(episode_id: str) -> list:
     '''
     Scrape m3u8 video source link from gogoanime
     params:
-        embedded_link (str): gogoanime embedded link
+        episode_id (str): gogoplay episode id
     return:
         link (str): m3u8 link
     '''
-    response: requests.Response = session.get(embedded_link, headers=header)
+    response: requests.Response = session.get(f'https://gogoplay1.com/download?{episode_id}', headers=header)
 
-    link: str = re.search(r"\s*sources.*", response.text).group()
-    link: str = re.search(r"https:.*(m3u8)|(mp4)", link).group()
-    return link
+    links: list = re.findall(r'href="(https?:\/\/vidstreamingcdn\.com\/.+expiry=[0-9]+)"', response.text)
 
-def get_quality(embed_link: str, link: str) -> list:
-    '''
-    Get available quality
-    params:
-        embed_link (str): gogoanime embedded link
-        link (str): m3u8 link
-    return:
-        qualitys (list): list of quality avaliable
-    '''
-
-    video_file: requests.Response = session.get(link, headers=dict(header, **{'referer': embed_link}))
-    qualitys: list = re.findall(r'([0-9]+)\.m3u8', video_file.text)
-
-    return qualitys
+    return links
 
 def play_episode(anime_id: str, episode: int, select_quality: bool):
     '''
@@ -109,25 +95,38 @@ def play_episode(anime_id: str, episode: int, select_quality: bool):
     return:
         subprocess.popen process
     '''
+
     embed_link = get_embed_link(anime_id, episode)
     if embed_link is None:
         print('Error: embed link not found')
         return None
 
-    link: str = get_link(embed_link)
-    qualitys = get_quality(embed_link, link)[::-1]
+
+    episode_id: re.Match = re.search(r'id=(.+?&)', embed_link)
+    if episode_id is None:
+        return None
+
+    episode_id: str = episode_id.group(0)
+
+    links: list = get_link(episode_id)
+
+    qualitys: dict = {}
+    for link in links:
+        qualitys[re.search(r'([0-9]+)p\.(?:mp4|m3u8)', link).group(1)] = link 
 
     if select_quality:
         quality: str = inquirer.select(
             message='Select quality',
-            choices=qualitys
+            choices=list(qualitys.keys())[::-1]
         ).execute()
-        link = link.replace('.m3u8', f'.{quality}.m3u8')
+        link = qualitys[quality]
     else:
-        link = link.replace('m3u8', qualitys[0] + '.m3u8')
+        link = qualitys[list(qualitys.keys())[-1]]
+
+    link = link.replace('amp;', '')
 
     process = subprocess.Popen(
-        shlex.split(f'mpv --http-header-fields="Referer: {embed_link}" {link}'),
+        shlex.split(f'mpv --http-header-fields="Referer: https://gogoplay1.com/download?{episode_id}" {link}'),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.STDOUT
     )
@@ -163,9 +162,14 @@ def get_episode(ep_end: int) -> int:
     return:
         episode (int)
     '''
-    episode: int = int(inquirer.text(message=F'Select episode to watch [1 - {ep_end}]').execute())
-    while not (episode >= 1 and episode <= ep_end):
-        episode: int = int(inquirer.text(message='Invalid episode, try again').execute())
+    while True:
+        try:
+            episode = int(inquirer.text(message=F'Select episode to watch [1 - {ep_end}]').execute())
+        except:
+            continue
+        while not (episode >= 1 and episode <= ep_end):
+            episode: int = int(inquirer.text(message='Invalid episode, try again').execute())
+        break
     return episode
 
 def main():
@@ -222,7 +226,7 @@ def main():
             elif action == 'Search other anime':
                 anime_title, anime_id = get_anime()
                 episode_count = get_episode_count(anime_id)
-                play_episode(anime_id, get_episode(episode_count))
+                play_episode(anime_id, get_episode(episode_count), args.quality)
             elif action == 'Quit':
                 sys.exit()
     except KeyboardInterrupt:
