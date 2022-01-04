@@ -1,3 +1,11 @@
+# ARCHIVED
+
+feel free to make a fork
+
+gogoanime keep changing the way to get link, and i don't want to keep fixing this.
+
+***
+
 browse and watch anime (scrape from gogoanime) (wip)
 
 basically [ani-cli](https://github.com/pystardust/ani-cli) but in python cuz python good
